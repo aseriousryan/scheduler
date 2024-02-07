@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>API Caller</title>
+	</head>
+
+	<body>
+		<h1>API Caller</h1>
+		<form method="post" action="/trigger-api">
+			<label for="cron-schedule">Enter Cron Schedule:</label>
+			<input type="text" id="cron-schedule" name="cronSchedule" placeholder="* * * * *" />
+			<button type="submit">Trigger API Call</button>
+		</form>
+	</body>
+</html>

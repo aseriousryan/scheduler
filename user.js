@@ -1,3 +1,3 @@
-var userData = [];
+var cronJobs = [];
 
-module.exports = userData;
+module.exports = cronJobs;
