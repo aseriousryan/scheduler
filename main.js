@@ -7,13 +7,13 @@ var cronJobs = require("./user");
 const upload = multer();
 
 const app = express();
-const port = 5000;
+const port = 3002;
 
 let chatApiResponse = "";
 
 // Define the API endpoints you want to call
 const chatApiUrl = "http://192.168.1.50:9085/chat";
-const submitApiUrl = "http://localhost:3000/submit";
+const submitApiUrl = "http://host.docker.internal:3000/submit";
 
 // Define a function to make the chat API call
 async function sendChatMessage(message, databaseName) {
@@ -203,7 +203,6 @@ app.delete("/delete/:id", (req, res) => {
 	}
 });
 
-// Start the Express server
 app.listen(port, () => {
 	console.log(`Server is running on http://localhost:${port}`);
 });
