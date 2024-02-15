@@ -5,14 +5,16 @@ const multer = require("multer")
 const FormData = require("form-data")
 var cronJobs = require("./user")
 const upload = multer()
-
+const cors = require("cors")
 const app = express()
 const port = 3002
 
+app.use(cors())
+
 let chatApiResponse = ""
 
-const chatApiUrl = "http://192.168.1.50:9085/chat"
-const submitApiUrl = "http://host.docker.internal:3000/submit"
+const chatApiUrl = "https://balanced-wren-relaxing.ngrok-free.app/chat"
+const submitApiUrl = "http://sudu.ai:3000/submit"
 
 // Define a function to make the chat API call
 async function sendChatMessage(message, databaseName) {
@@ -212,5 +214,5 @@ app.delete("/delete/:id", (req, res) => {
 })
 
 app.listen(port, () => {
-  console.log(`Server is running on http://localhost:${port}`)
+  console.log(`Server is running on http://sudu.ai:${port}`)
 })
