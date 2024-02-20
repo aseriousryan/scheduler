@@ -12,6 +12,7 @@ const port = 3002
 app.use(cors())
 
 let chatApiResponse = ""
+let maxId = 0
 
 const chatApiUrl = "https://balanced-wren-relaxing.ngrok-free.app/chat"
 const submitApiUrl = "http://sudu.ai:3000/submit"
@@ -72,7 +73,6 @@ app.get("/", (req, res) => {
 
 app.get("/all", (req, res) => {
   const newCronJobs = cronJobs.map(({ job, ...rest }) => rest)
-
   res.send(newCronJobs)
 })
 
@@ -84,7 +84,35 @@ app.post("/trigger-api", (req, res) => {
     second_function,
     contact_num,
     company_id,
+    question_name,
+    use_case,
+    sub_use_case,
   } = req.body
+
+  const requiredFields = [
+    "question",
+    "database_name",
+    "cron_input",
+    "second_function",
+    "contact_num",
+    "company_id",
+    "question_name",
+    "use_case",
+    "sub_use_case",
+  ]
+
+  for (const field of requiredFields) {
+    if (!req.body[field]) {
+      console.log(`${field} is required`)
+      return res.send(`${field} is required`)
+    }
+  }
+
+  const contactNumRegex = /^60\d{9,10}$/
+  if (!contactNumRegex.test(contact_num)) {
+    console.log("Invalid phone number format")
+    return res.send("Invalid phone number format")
+  }
 
   if (cron_input.toLowerCase() === "stop") {
     // Stop all existing cron jobs
@@ -123,14 +151,31 @@ app.post("/trigger-api", (req, res) => {
 
     console.log(`New cron job scheduled: ${schedule}`)
 
+    let cronJobId
+
+    if (cronJobs.length < 0) {
+      maxId += 1
+      cronJobId = maxId
+    } else {
+      for (const cronJob of cronJobs) {
+        if (cronJob.id > maxId) {
+          maxId = cronJob.id
+        }
+      }
+      cronJobId = maxId + 1
+    }
+
     const newCron = {
-      id: cronJobs.length + 1,
+      id: cronJobId,
       company_id: company_id,
       cron_input: schedule,
       question: question,
       contact_number: contact_num,
       secFunction: second_function,
       job: newCronJob,
+      question_name: question_name,
+      use_case: use_case,
+      sub_use_case: sub_use_case,
     }
 
     cronJobs.push(newCron)
@@ -141,7 +186,40 @@ app.post("/trigger-api", (req, res) => {
 })
 
 app.patch("/update", (req, res) => {
-  const { id, cron_input, question, contact_num, company_id } = req.body
+  const {
+    id,
+    cron_input,
+    question,
+    contact_num,
+    company_id,
+    question_name,
+    use_case,
+    sub_use_case,
+  } = req.body
+
+  const requiredFields = [
+    "id",
+    "question",
+    "cron_input",
+    "contact_num",
+    "company_id",
+    "question_name",
+    "use_case",
+    "sub_use_case",
+  ]
+
+  for (const field of requiredFields) {
+    if (!req.body[field]) {
+      console.log(`${field} is required`)
+      return res.send(`${field} is required`)
+    }
+  }
+
+  const contactNumRegex = /^60\d{9,10}$/
+  if (!contactNumRegex.test(contact_num)) {
+    console.log("Invalid phone number format")
+    return res.send("Invalid phone number format")
+  }
 
   const indexToUpdate = cronJobs.findIndex((data) => data.id === parseInt(id))
   const jobToUpdate = cronJobs[indexToUpdate]
@@ -155,6 +233,9 @@ app.patch("/update", (req, res) => {
     jobToUpdate.question = question
     jobToUpdate.contact_number = contact_num
     jobToUpdate.company_id = company_id
+    jobToUpdate.question_name = question_name
+    jobToUpdate.use_case = use_case
+    jobToUpdate.sub_use_case = sub_use_case
 
     const newCronSchedules = cron_input.split(",")
 
@@ -165,7 +246,7 @@ app.patch("/update", (req, res) => {
         console.log("Use Case:", question)
         console.log("Cron Input:", schedule)
         console.log("Company Id:", company_id)
-        console.log("Sec Function:", jobToUpdate.secFunc)
+        console.log("Sec Function:", jobToUpdate.secFunction)
         console.log("Contact Number:", contact_num)
         console.log(
           new Date().toLocaleString("en-US", { timeZone: "Asia/Kuala_Lumpur" })
@@ -199,12 +280,22 @@ app.delete("/delete/:id", (req, res) => {
 
   // Find the index of the element with the specified id
   const indexToRemove = cronJobs.findIndex((data) => data.id === parseInt(id))
+
+  if (indexToRemove < 0) {
+    console.log("The id is not found")
+    return res.send("The id not found")
+  }
+
   const jobToRemove = cronJobs[indexToRemove]
   jobToRemove.job.stop()
 
   if (indexToRemove !== -1) {
     // Remove the element at the found index
     cronJobs.splice(indexToRemove, 1)
+
+    if (id > maxId) {
+      maxId = parseInt(id)
+    }
 
     console.log(`The array id ${id} has been deleted`)
     res.send(`The array id ${id} has been deleted`)
