@@ -12,6 +12,7 @@ const port = 3002;
 app.use(cors());
 
 let chatApiResponse = "";
+let maxId = 0;
 
 const chatApiUrl = "https://balanced-wren-relaxing.ngrok-free.app/chat";
 const submitApiUrl = "http://sudu.ai:3000/submit";
@@ -72,7 +73,6 @@ app.get("/", (req, res) => {
 
 app.get("/all", (req, res) => {
 	const newCronJobs = cronJobs.map(({ job, ...rest }) => rest);
-
 	res.send(newCronJobs);
 });
 
@@ -129,8 +129,22 @@ app.post("/trigger-api", (req, res) => {
 
 		console.log(`New cron job scheduled: ${schedule}`);
 
+		let cronJobId;
+
+		if (cronJobs.length <= 0) {
+			maxId += 1;
+			cronJobId = maxId;
+		} else {
+			for (const cronJob of cronJobs) {
+				if (cronJob.id > maxId) {
+					maxId = cronJob.id;
+				}
+			}
+			cronJobId = maxId + 1;
+		}
+
 		const newCron = {
-			id: cronJobs.length + 1,
+			id: cronJobId,
 			company_id: company_id,
 			cron_input: schedule,
 			question: question,
@@ -221,6 +235,10 @@ app.patch("/update", (req, res) => {
 
 app.delete("/delete/:id", (req, res) => {
 	const id = req.params.id;
+
+	if (id > maxId) {
+		maxId = parseInt(id);
+	}
 
 	// Find the index of the element with the specified id
 	const indexToRemove = cronJobs.findIndex((data) => data.id === parseInt(id));
