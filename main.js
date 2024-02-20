@@ -236,18 +236,24 @@ app.patch("/update", (req, res) => {
 app.delete("/delete/:id", (req, res) => {
 	const id = req.params.id;
 
-	if (id > maxId) {
-		maxId = parseInt(id);
-	}
-
 	// Find the index of the element with the specified id
 	const indexToRemove = cronJobs.findIndex((data) => data.id === parseInt(id));
+
+	if (indexToRemove <= 0) {
+		console.log("The id is not found");
+		return res.send("The id not found");
+	}
+
 	const jobToRemove = cronJobs[indexToRemove];
 	jobToRemove.job.stop();
 
 	if (indexToRemove !== -1) {
 		// Remove the element at the found index
 		cronJobs.splice(indexToRemove, 1);
+
+		if (id > maxId) {
+			maxId = parseInt(id);
+		}
 
 		console.log(`The array id ${id} has been deleted`);
 		res.send(`The array id ${id} has been deleted`);
