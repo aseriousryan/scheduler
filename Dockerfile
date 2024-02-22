@@ -19,5 +19,8 @@ COPY . .
 # Make port 3002 available to the world outside this container
 EXPOSE 3002
 
+# Set the timezone
+ENV TZ=Asia/Kuala_Lumpur
+
 # Run the app when the container launches
 CMD [ "node", "main.js" ]
