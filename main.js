@@ -104,7 +104,7 @@ app.post("/trigger-api", (req, res) => {
   for (const field of requiredFields) {
     if (!req.body[field]) {
       console.log(`${field} is required`)
-      return res.send(`${field} is required`)
+      return res.status(400).send(`${field} is required`) // Send 400 Bad Request response
     }
   }
 
